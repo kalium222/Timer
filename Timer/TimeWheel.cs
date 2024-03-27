@@ -6,7 +6,7 @@ namespace Timer
         private readonly int m_tickMs;
         private readonly int m_wheelSize;
         private int m_current;
-        private List<TimerList> m_bucketList;
+        private TimerList[] m_bucketArray;
 
         // public method
         public TimeWheel(int tickMs, int wheelSize)
@@ -14,7 +14,7 @@ namespace Timer
             m_current = 0;
             m_tickMs = tickMs;
             m_wheelSize = wheelSize;
-            m_bucketList = new List<TimerList>(wheelSize);
+            m_bucketArray = new TimerList[wheelSize];
         }
 
         // 将move和dotask交给HierachicalTimeWheel完成
@@ -35,10 +35,10 @@ namespace Timer
         }
         
         // return the current TimeList
-        // and remove it from the m_bucketList
+        // and remove it from the m_bucketArray
         public TimerList TakeCurrentTimers()
         {
-            TimerList current_list = m_bucketList[m_current];
+            TimerList current_list = m_bucketArray[m_current];
             
             // TODO:
             return new TimerList();
@@ -46,7 +46,7 @@ namespace Timer
 
         public TimerList GetCurrentTimers()
         {
-            return m_bucketList[m_current];
+            return m_bucketArray[m_current];
         }
 
         // 在timewheel中加入Timer
@@ -56,14 +56,14 @@ namespace Timer
         {
             if ( timer.Postpone <= 0 || 
                     timer.Postpone > m_tickMs*m_wheelSize ) return false;
-            m_bucketList[timer.Postpone%m_tickMs].Add(timer);
+            m_bucketArray[timer.Postpone%m_tickMs].Add(timer);
             return true;
         }
 
         // 从timewheel中移除timer
         public bool RemoveTimer(Timer timer)
         {
-            return m_bucketList[timer.Postpone%m_tickMs].Remove(timer);
+            return m_bucketArray[timer.Postpone%m_tickMs].Remove(timer);
         }
 
         // 若timer被修改（多次或主动修改）
