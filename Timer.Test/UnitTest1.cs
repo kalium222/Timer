@@ -1,3 +1,5 @@
+using static Timer.TimeWheel;
+
 namespace Timer.Test
 {
     public class Tests
@@ -16,6 +18,12 @@ namespace Timer.Test
                         });
                 timer.DoTask();
     
+        }
+
+        [Test]
+        public void TestTimeWheelTakeCurrentTimers()
+        {
+            TimeWheel timeWheel = new TimeWheel(0, 4);
         }
     }
 

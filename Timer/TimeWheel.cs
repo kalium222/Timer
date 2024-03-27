@@ -3,8 +3,8 @@ namespace Timer
     public class TimeWheel
     {
         // private
-        private int m_tickMs;
-        private int m_wheelSize;
+        private readonly int m_tickMs;
+        private readonly int m_wheelSize;
         private int m_current;
         private List<TimerList> m_bucketList;
 
@@ -28,6 +28,12 @@ namespace Timer
             return flag;
         }
 
+        // 该timewheel上，现在走过的时间
+        public int GetCurrentTime()
+        {
+            return m_current * m_tickMs;
+        }
+        
         // return the current TimeList
         // and remove it from the m_bucketList
         public TimerList TakeCurrentTimers()
@@ -43,19 +49,31 @@ namespace Timer
             return m_bucketList[m_current];
         }
 
-        public int AddTimer(Timer timer)
+        // 在timewheel中加入Timer
+        // 若失败（超时/时间不够/以前）则不加入
+        // 并返回false
+        public bool AddTimer(Timer timer)
         {
-            return 0;
+            if ( timer.Postpone <= 0 || 
+                    timer.Postpone > m_tickMs*m_wheelSize ) return false;
+            m_bucketList[timer.Postpone%m_tickMs].Add(timer);
+            return true;
         }
 
-        public Timer RemoveTimer(Timer timer)
+        // 从timewheel中移除timer
+        public bool RemoveTimer(Timer timer)
         {
-            return new Timer(0, 0, 0, 0, ()=>{});
+            return m_bucketList[timer.Postpone%m_tickMs].Remove(timer);
         }
 
-        public int ModifyTimer(Timer timer)
+        // 若timer被修改（多次或主动修改）
+        // 则需要放置在合适的位置
+        // 若不在该timewheel内
+        // 则返回false
+        public bool ModifyTimer(Timer timer)
         {
-            return 0;
+            this.RemoveTimer(timer);
+            return this.AddTimer(timer);
         }
 
     }
