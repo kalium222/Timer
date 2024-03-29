@@ -24,16 +24,23 @@ namespace Timer.Test
         public void Setup() {}
 
         [Test]
-        public void TestTimerListMove()
+        public void TestAdd()
         {
-
+            TimerList l1 = new TimerList();
+            for ( int i=0; i<10; i++ )
+            {
+                l1.Add(new Timer((uint)i, 0, ()=>{}));
+            }
+            Timer? p = l1.Head.Next;
+            int count = 9;
+            while ( p != null )
+            {
+                Assert.IsTrue(((int)p.Id)==count);
+                count--;
+                p = p.Next;
+            }
         }
 
-        [Test]
-        public void TestTimeWheelTakeCurrentTimers()
-        {
-            TimeWheel timeWheel = new TimeWheel(0, 4);
-        }
     }
 }
 

@@ -53,7 +53,8 @@ namespace Timer
         // 从timewheel中移除timer
         public bool RemoveTimer(Timer timer)
         {
-            return m_bucketArray[timer.Postpone%m_tickMs].Remove(timer);
+            //return m_bucketArray[timer.Postpone%m_tickMs].Remove(timer);
+            return false;
         }
 
         // 若timer被修改（多次或主动修改）

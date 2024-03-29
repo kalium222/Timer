@@ -85,36 +85,39 @@ namespace Timer
 
     public class TimerList 
     {
-        private LinkedList<Timer>? m_timerList;
+        private Timer m_head;
         
         // public method
-
-        // move constructor
-        public static TimerList Move(TimerList timerList)
+        public TimerList()
         {
-            TimerList dest = new TimerList();
-            dest.m_timerList = timerList.m_timerList;
-            timerList.m_timerList = null;
-            return dest;
+            m_head = new Timer();
         }
 
+        // 不检查各种条件，交给timewheel
+        // 及heirachical timewheels
         public void Add(Timer timer)
         {
-            if ( m_timerList == null )
-            {
-                m_timerList = new LinkedList<Timer>();
-            }
-            m_timerList.AddLast(timer);
+            timer.Prev = m_head;
+            timer.Next = m_head.Next;
+            if ( timer.Next != null ) 
+                timer.Next.Prev = timer;
+            m_head.Next = timer;
         }
 
-        public bool Remove(Timer timer)
+        public void Detach(Timer timer)
         {
-            return m_timerList?.Remove(timer) ?? false;
+            if ( timer.Next != null )
+                timer.Next.Prev = timer.Prev;
+            //timer.Next?.Prev = timer.Prev;
+            if ( timer.Prev != null )
+                timer.Prev.Next = timer.Next;
+            timer.Next = timer.Prev = null;
         }
 
-        public int Length
+        public Timer Head
         {
-            get { return m_timerList?.Count ?? -1; }
+            get { return m_head; }
         }
+
     }
 }
