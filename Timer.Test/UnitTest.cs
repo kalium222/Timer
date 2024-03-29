@@ -41,6 +41,26 @@ namespace Timer.Test
             }
         }
 
+        [Test]
+        public void TestDetach()
+        {
+            TimerList l1 = new TimerList();
+            for ( int i=0; i<10; i++ )
+            {
+                l1.Add(new Timer((uint)i, 0, ()=>{}));
+            }
+            Timer? p = l1.Head.Next;
+            int count = 9;
+            while ( p != null )
+            {
+                Timer? temp = l1.Head.Next;
+                l1.Detach(temp);
+                Assert.IsTrue((int)(temp?.Id ?? 10000)==count);
+                count--;
+                p = p.Next;
+            }
+        }
+
     }
 }
 

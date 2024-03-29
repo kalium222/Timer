@@ -104,8 +104,10 @@ namespace Timer
             m_head.Next = timer;
         }
 
-        public void Detach(Timer timer)
+        public void Detach(Timer? timer)
         {
+            if ( timer==null )
+                return;
             if ( timer.Next != null )
                 timer.Next.Prev = timer.Prev;
             //timer.Next?.Prev = timer.Prev;
