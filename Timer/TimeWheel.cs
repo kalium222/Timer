@@ -3,13 +3,13 @@ namespace Timer
     public class TimeWheel
     {
         // private
-        private readonly int m_tickMs;
+        private readonly ulong m_tickMs;
         private readonly int m_wheelSize;
         private int m_current;
         private TimerList[] m_bucketArray;
 
         // public method
-        public TimeWheel(int tickMs, int wheelSize)
+        public TimeWheel(ulong tickMs, int wheelSize)
         {
             m_current = 0;
             m_tickMs = tickMs;
@@ -29,22 +29,12 @@ namespace Timer
         }
 
         // 该timewheel上，现在走过的时间
-        public int GetCurrentTime()
+        public ulong GetCurrentTime()
         {
-            return m_current * m_tickMs;
+            return ((ulong)m_current) * m_tickMs;
         }
         
-        // return the current TimeList
-        // and remove it from the m_bucketArray
-        public TimerList TakeCurrentTimers()
-        {
-            TimerList current_list = m_bucketArray[m_current];
-            
-            // TODO:
-            return new TimerList();
-        }
-
-        public TimerList GetCurrentTimers()
+        public TimerList GetCurrentTimerList()
         {
             return m_bucketArray[m_current];
         }
@@ -55,7 +45,7 @@ namespace Timer
         public bool AddTimer(Timer timer)
         {
             if ( timer.Postpone <= 0 || 
-                    timer.Postpone > m_tickMs*m_wheelSize ) return false;
+                    timer.Postpone > m_tickMs*((ulong)m_wheelSize) ) return false;
             m_bucketArray[timer.Postpone%m_tickMs].Add(timer);
             return true;
         }

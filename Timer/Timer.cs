@@ -3,16 +3,27 @@ namespace Timer
     public class Timer 
     {
         // private
-        // change to TimeSpan?
-        private int m_id;
-        private int m_postpone;
-        private int m_interval;
-        private int m_times;
+        private uint m_id;
+        private ulong m_postpone;
+        private ulong m_interval;
+        private uint m_times;
+        // 以该类为list node
+        private Timer? prev;
+        private Timer? next;
 
         // public
         public event Action Task;
 
-        public Timer(int id, int postpone, Action task) 
+        public Timer()
+        {
+            m_id = 0;
+            m_postpone = 0;
+            m_interval = 0;
+            m_times = 1;
+            Task += () => {};
+        }
+
+        public Timer(uint id, ulong postpone, Action task) 
         {
             m_id = id;
             m_postpone = postpone;
@@ -21,7 +32,7 @@ namespace Timer
             Task += task;
         }
 
-        public Timer(int id, int postpone, int interval, int times, Action task) 
+        public Timer(uint id, ulong postpone, ulong interval, uint times, Action task) 
         {
             m_id = id;
             m_postpone = postpone;
@@ -30,25 +41,37 @@ namespace Timer
             Task += task;
         }
 
-        public int Id {
+        public uint Id {
             get { return m_id; }
         }
 
-        public int Postpone {
+        public ulong Postpone {
             get { return m_postpone; }
             set { m_postpone = value; }
         }
         
-        public int Interval
+        public ulong Interval
         {
             get { return m_interval; }
             set { m_interval = value; }
         }
 
-        public int Times
+        public uint Times
         {
             get { return m_times; }
             set { m_times = value; }
+        }
+
+        public Timer? Prev
+        {
+            get { return prev; }
+            set { prev = value; }
+        }
+
+        public Timer? Next
+        {
+            get { return next; }
+            set { next = value; }
         }
 
         // 应该被HierachicalTimeWheel调用
@@ -65,6 +88,16 @@ namespace Timer
         private LinkedList<Timer>? m_timerList;
         
         // public method
+
+        // move constructor
+        public static TimerList Move(TimerList timerList)
+        {
+            TimerList dest = new TimerList();
+            dest.m_timerList = timerList.m_timerList;
+            timerList.m_timerList = null;
+            return dest;
+        }
+
         public void Add(Timer timer)
         {
             if ( m_timerList == null )
@@ -77,6 +110,11 @@ namespace Timer
         public bool Remove(Timer timer)
         {
             return m_timerList?.Remove(timer) ?? false;
+        }
+
+        public int Length
+        {
+            get { return m_timerList?.Count ?? -1; }
         }
     }
 }
