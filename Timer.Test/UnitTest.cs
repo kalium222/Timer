@@ -45,22 +45,34 @@ namespace Timer.Test
         public void TestDetach()
         {
             TimerList l1 = new TimerList();
-            for ( int i=0; i<10; i++ )
-            {
-                l1.Add(new Timer((uint)i, 0, ()=>{}));
-            }
-            Timer? p = l1.Head.Next;
-            int count = 9;
-            while ( p != null )
-            {
-                Timer? temp = l1.Head.Next;
-                l1.Detach(temp);
-                Assert.IsTrue((int)(temp?.Id ?? 10000)==count);
-                count--;
-                p = p.Next;
-            }
+            Timer t1 = new Timer(1);
+            Timer t2 = new Timer(2);
+            Timer t3 = new Timer(3);
+            Timer t4 = new Timer(4);
+            l1.Add(t1);
+            l1.Add(t2);
+            l1.Add(t3);
+            l1.Add(t4);
+            TimerList.Detach(t2);
+            Assert.IsTrue(t3.Next==t1);
+            Assert.IsTrue(t1.Prev==t3);
         }
 
+    }
+
+    public class TestTimeWheel
+    {
+        [Test]
+        public void TestTick()
+        {
+            TimeWheel wheel = new TimeWheel(1, 60);
+            for (int i=0; i<59; i++)
+            {
+                Assert.IsTrue((ulong)i==wheel.GetCurrentTime());
+                wheel.Tick();
+            }
+            Assert.IsTrue(wheel.Tick());
+        }
     }
 }
 

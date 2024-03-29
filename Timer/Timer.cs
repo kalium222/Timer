@@ -8,13 +8,22 @@ namespace Timer
         private ulong m_interval;
         private uint m_times;
         // 以该类为list node
-        private Timer? prev;
-        private Timer? next;
+        private Timer? m_prev;
+        private Timer? m_next;
 
         // public
         public event Action Task;
 
         public Timer()
+        {
+            m_id = 0;
+            m_postpone = 0;
+            m_interval = 0;
+            m_times = 1;
+            Task += () => {};
+        }
+
+        public Timer(uint id)
         {
             m_id = 0;
             m_postpone = 0;
@@ -64,14 +73,14 @@ namespace Timer
 
         public Timer? Prev
         {
-            get { return prev; }
-            set { prev = value; }
+            get { return m_prev; }
+            set { m_prev = value; }
         }
 
         public Timer? Next
         {
-            get { return next; }
-            set { next = value; }
+            get { return m_next; }
+            set { m_next = value; }
         }
 
         // 应该被HierachicalTimeWheel调用
@@ -93,7 +102,7 @@ namespace Timer
             m_head = new Timer();
         }
 
-        // 不检查各种条件，交给timewheel
+        // 不检查各种条件(是否重复等)，交给timewheel
         // 及heirachical timewheels
         public void Add(Timer timer)
         {
@@ -104,13 +113,12 @@ namespace Timer
             m_head.Next = timer;
         }
 
-        public void Detach(Timer? timer)
+        public static void Detach(Timer? timer)
         {
             if ( timer==null )
                 return;
             if ( timer.Next != null )
                 timer.Next.Prev = timer.Prev;
-            //timer.Next?.Prev = timer.Prev;
             if ( timer.Prev != null )
                 timer.Prev.Next = timer.Next;
             timer.Next = timer.Prev = null;

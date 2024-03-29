@@ -39,32 +39,16 @@ namespace Timer
             return m_bucketArray[m_current];
         }
 
-        // 在timewheel中加入Timer
-        // 若失败（超时/时间不够/以前）则不加入
-        // 并返回false
-        public bool AddTimer(Timer timer)
+        // 不判断条件
+        public void AddTimer(Timer timer)
         {
-            if ( timer.Postpone <= 0 || 
-                    timer.Postpone > m_tickMs*((ulong)m_wheelSize) ) return false;
             m_bucketArray[timer.Postpone%m_tickMs].Add(timer);
-            return true;
         }
 
         // 从timewheel中移除timer
-        public bool RemoveTimer(Timer timer)
+        public static void DetachTimer(Timer timer)
         {
-            //return m_bucketArray[timer.Postpone%m_tickMs].Remove(timer);
-            return false;
-        }
-
-        // 若timer被修改（多次或主动修改）
-        // 则需要放置在合适的位置
-        // 若不在该timewheel内
-        // 则返回false
-        public bool ModifyTimer(Timer timer)
-        {
-            this.RemoveTimer(timer);
-            return this.AddTimer(timer);
+            TimerList.Detach(timer);
         }
 
     }
