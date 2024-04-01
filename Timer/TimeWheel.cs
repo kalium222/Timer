@@ -55,12 +55,35 @@ namespace Timer
 
     public class HierachicalTimeWheel 
     {
+        // private field
+        private static HierachicalTimeWheel m_instance;
+        private static readonly object m_lock = new object();
+        private LinkedList<TimeWheel> m_timeWheelList;
+        private Dictionary<int, Timer> m_timerTable;
         // public method
         // 生成合适大小的一系列timewheels
-        public HierachicalTimeWheel()
+        private HierachicalTimeWheel()
         {
-            timeWheelList = new LinkedList<TimeWheel>();
-            timerTable = new Dictionary<int, Timer>();
+            m_timeWheelList = new LinkedList<TimeWheel>();
+            m_timerTable = new Dictionary<int, Timer>();
+        }
+
+        public static HierachicalTimeWheel Instance
+        {
+            get
+            {
+                if (m_instance==null)
+                {
+                    lock (m_lock)
+                    {
+                        if ( m_instance==null )
+                        {
+                            m_instance = new HierachicalTimeWheel();
+                        }
+                    }
+                }
+                return m_instance;
+            }
         }
 
         // 完成所有在最小timewheel里的Timer
@@ -70,7 +93,7 @@ namespace Timer
             // TODO:
             // finish the timers in the smallest TimeWheel
             // pop the timers to the smaller TimeWheel from current one
-            foreach ( TimeWheel tw in timeWheelList )
+            foreach ( TimeWheel tw in m_timeWheelList )
             {
                 if ( !tw.Tick() ) 
                 {
@@ -97,8 +120,5 @@ namespace Timer
             return 0;
         }
 
-        // private field
-        private LinkedList<TimeWheel> timeWheelList;
-        private Dictionary<int, Timer> timerTable;
     }
 }

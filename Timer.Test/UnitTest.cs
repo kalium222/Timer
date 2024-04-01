@@ -56,6 +56,8 @@ namespace Timer.Test
             TimerList.Detach(t2);
             Assert.IsTrue(t3.Next==t1);
             Assert.IsTrue(t1.Prev==t3);
+            TimerList.Detach(t1);
+            Assert.IsNull(t3.Next);
         }
 
     }
@@ -72,6 +74,15 @@ namespace Timer.Test
                 wheel.Tick();
             }
             Assert.IsTrue(wheel.Tick());
+        }
+    }
+
+    public class TestHierachicalTimeWheel
+    {
+        [Test]
+        public void Testwhat()
+        {
+            HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
         }
     }
 }
