@@ -91,21 +91,16 @@ namespace Timer.Test
             instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
             instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
             List<int> res = instance.GetDistri();
-            List<int> expect = new List<int>();
+            List<int> expect = new List<int>(new int[] {1,1,1,1,1});
             for ( int i=0; i<5; i++ )
-            {
-                expect.Add(1);
-            }
-            for ( int i=0; i<5; i++ )
-            {
                 Assert.IsTrue(res[i]==expect[i]);
-            }
         }
         
         [Test]
         public void TestRemove()
         {
             HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            instance.ClearAll();
             Assert.IsNotNull(instance);
             Assert.IsNotNull(instance.GetCurrentTime());
             uint id1 = instance.AddTimer(1, 1, 1, ()=>{});
@@ -113,11 +108,37 @@ namespace Timer.Test
             uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
             uint id4 = instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
             uint id5 = instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            List<int> res;
+
             instance.RemoveTimer(id1);
+            res = instance.GetDistri();
+            List<int> expect1 = new List<int>(new int[] {0, 1, 1, 1, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect1[i]);
+
             instance.RemoveTimer(id2);
+            res = instance.GetDistri();
+            List<int> expect2 = new List<int>(new int[] {0, 0, 1, 1, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect2[i]);
+
             instance.RemoveTimer(id3);
+            res = instance.GetDistri();
+            List<int> expect3 = new List<int>(new int[] {0, 0, 0, 1, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect3[i]);
+
             instance.RemoveTimer(id4);
+            res = instance.GetDistri();
+            List<int> expect4 = new List<int>(new int[] {0, 0, 0, 0, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect4[i]);
+
             instance.RemoveTimer(id5);
+            res = instance.GetDistri();
+            List<int> expect5 = new List<int>(new int[] {0, 0, 0, 0, 0});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect5[i]);
         }
     }
 }

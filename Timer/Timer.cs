@@ -124,6 +124,11 @@ namespace Timer
             timer.Next = timer.Prev = null;
         }
 
+        public void Clear()
+        {
+            m_head.Next = null;
+        }
+
         public Timer Head
         {
             get { return m_head; }

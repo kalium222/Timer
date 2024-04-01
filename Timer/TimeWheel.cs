@@ -55,6 +55,15 @@ namespace Timer
             TimerList.Detach(timer);
         }
 
+        public void ClearAll()
+        {
+            m_current = 0;
+            foreach ( TimerList l in m_bucketArray )
+            {
+                l.Clear();
+            }
+        }
+
         public ulong MaxTime
         {
             get { return m_tickMs*(ulong)m_wheelSize; }
@@ -230,6 +239,13 @@ namespace Timer
             modified.Times = times;
             this.RefreshTimer(modified);
             return 0;
+        }
+
+        public void ClearAll()
+        {
+            m_timerTable.Clear();
+            foreach ( TimeWheel tw in m_timeWheelArray )
+                tw.ClearAll();
         }
 
     }
