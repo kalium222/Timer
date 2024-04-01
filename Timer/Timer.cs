@@ -129,5 +129,20 @@ namespace Timer
             get { return m_head; }
         }
 
+        public int Count
+        {
+            get
+            {
+                int result = 0;
+                Timer? p = m_head.Next;
+                while ( p!=null )
+                {
+                    result++;
+                    p = p.Next;
+                }
+                return result;
+            }
+        }
+
     }
 }

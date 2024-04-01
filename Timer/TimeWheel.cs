@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Timer
 {
     public class TimeWheel
@@ -15,6 +17,8 @@ namespace Timer
             m_tickMs = tickMs;
             m_wheelSize = wheelSize;
             m_bucketArray = new TimerList[wheelSize];
+            for (int i=0; i<m_wheelSize; i++)
+                m_bucketArray[i] = new TimerList();
         }
 
         // 将move和dotask交给HierachicalTimeWheel完成
@@ -42,7 +46,7 @@ namespace Timer
         // 不判断条件
         public void AddTimer(Timer timer)
         {
-            m_bucketArray[timer.Postpone%m_tickMs].Add(timer);
+            m_bucketArray[(int)(timer.Postpone/m_tickMs)%m_wheelSize].Add(timer);
         }
 
         // 从timewheel中移除timer
@@ -51,49 +55,77 @@ namespace Timer
             TimerList.Detach(timer);
         }
 
+        public ulong MaxTime
+        {
+            get { return m_tickMs*(ulong)m_wheelSize; }
+        }
+
+        public int Count 
+        {
+            get
+            {
+                int result = 0;
+                foreach ( TimerList l in m_bucketArray )
+                {
+                    result += l.Count;
+                }
+                return result;
+            }
+        }
     }
 
     public class HierachicalTimeWheel 
     {
         // private field
-        private static HierachicalTimeWheel m_instance;
+        private static HierachicalTimeWheel? s_instance;
         private static readonly object m_lock = new object();
-        private LinkedList<TimeWheel> m_timeWheelList;
-        private Dictionary<int, Timer> m_timerTable;
+        // 由小到大
+        private List<TimeWheel> m_timeWheelArray;
+        private ConcurrentDictionary<uint, Timer> m_timerTable;
+        private uint m_maxId = 0;
+
         // public method
         // 生成合适大小的一系列timewheels
         private HierachicalTimeWheel()
         {
-            m_timeWheelList = new LinkedList<TimeWheel>();
-            m_timerTable = new Dictionary<int, Timer>();
+            // TODO:
+            m_timeWheelArray = new List<TimeWheel>();
+            // ms, s, min, hour, day
+            m_timeWheelArray.Add(new TimeWheel(1, 1000));
+            m_timeWheelArray.Add(new TimeWheel(1*1000, 60));
+            m_timeWheelArray.Add(new TimeWheel(1*1000*60, 60));
+            m_timeWheelArray.Add(new TimeWheel(1*1000*60*60, 24));
+            m_timeWheelArray.Add(new TimeWheel(1*1000*60*60*24, 50));
+            m_timerTable = new ConcurrentDictionary<uint, Timer>();
         }
 
         public static HierachicalTimeWheel Instance
         {
             get
             {
-                if (m_instance==null)
+                if (s_instance==null)
                 {
                     lock (m_lock)
                     {
-                        if ( m_instance==null )
+                        if ( s_instance==null )
                         {
-                            m_instance = new HierachicalTimeWheel();
+                            s_instance = new HierachicalTimeWheel();
                         }
                     }
                 }
-                return m_instance;
+                return s_instance;
             }
         }
 
         // 完成所有在最小timewheel里的Timer
         // 将其他timewheels里当前的timer向下移
+        // 重复任务重新放置
         public void Tick()
         {
             // TODO:
             // finish the timers in the smallest TimeWheel
             // pop the timers to the smaller TimeWheel from current one
-            foreach ( TimeWheel tw in m_timeWheelList )
+            foreach ( TimeWheel tw in m_timeWheelArray )
             {
                 if ( !tw.Tick() ) 
                 {
@@ -102,21 +134,101 @@ namespace Timer
             }
         }
 
+        public Timer GetTimer(uint id)
+        {
+            return m_timerTable[id];
+        }
+
+        public List<int> GetDistri()
+        {
+            List<int> result = new List<int>(m_timeWheelArray.Count);
+            for ( int i=0; i<result.Capacity; i++ )
+            {
+                result.Add(m_timeWheelArray[i].Count);
+            }
+            return result;
+        }
+
+        public ulong GetCurrentTime()
+        {
+            ulong result = 0;
+            foreach ( TimeWheel timewheel in m_timeWheelArray )
+                result += timewheel.GetCurrentTime();
+            return result;
+        }
+
+        public ulong GetMaxTime()
+        {
+            return m_timeWheelArray.Last().MaxTime;
+        }
+
         // 把timer加入Dictionary
         // id?
         // 根据时间把timer加入合适的timewheel
-        public int AddTimer()
+        public uint AddTimer(ulong postpone, ulong interval, uint times, Action task)
         {
+            if ( m_maxId == uint.MaxValue )
+                m_maxId = 0;
+            while ( m_timerTable.ContainsKey(m_maxId) )
+                m_maxId++;
+            Timer newTimer = new Timer(m_maxId, postpone, interval, times, task);
+            this.AddTimer(newTimer);
+            return newTimer.Id;
+        }
+
+        public void AddTimer(Timer timer)
+        {
+            m_timerTable.TryAdd(timer.Id, timer);
+            // TODO:
+            ulong idx = timer.Postpone - this.GetCurrentTime();
+            if ( (long)idx <= 0 )
+                m_timeWheelArray.First().AddTimer(timer);
+            else if ( idx >= this.GetMaxTime() )
+                m_timeWheelArray.Last().AddTimer(timer);
+            else
+            {
+                // TODO:
+                foreach ( TimeWheel tw in m_timeWheelArray )
+                {
+                    if ( idx <= tw.MaxTime )
+                    {
+                        tw.AddTimer(timer);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public Timer? RemoveTimer(Timer timer)
+        {
+            Timer? res;
+            m_timerTable.TryRemove(timer.Id, out res);
+            TimerList.Detach(timer);
+            return res;
+        }
+
+        public Timer? RemoveTimer(uint id)
+        {
+            Timer? timer = m_timerTable[id];
+            m_timerTable.Remove(id, out timer);
+            TimerList.Detach(timer);
+            return timer;
+        }
+
+        public int RefreshTimer(Timer timer)
+        {
+            this.RemoveTimer(timer);
+            this.AddTimer(timer);
             return 0;
         }
 
-        public Timer RemoveTimer()
+        public int ModifyTimer(uint id, ulong postpone, ulong interval, uint times)
         {
-            return new Timer(0, 0, 0, 0, ()=>{});
-        }
-
-        public int ModifyTimer()
-        {
+            Timer modified = GetTimer(id);
+            modified.Postpone = postpone;
+            modified.Interval = interval;
+            modified.Times = times;
+            this.RefreshTimer(modified);
             return 0;
         }
 

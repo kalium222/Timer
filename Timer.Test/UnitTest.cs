@@ -80,9 +80,44 @@ namespace Timer.Test
     public class TestHierachicalTimeWheel
     {
         [Test]
-        public void Testwhat()
+        public void TestAdd()
         {
             HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            Assert.IsNotNull(instance);
+            Assert.IsNotNull(instance.GetCurrentTime());
+            instance.AddTimer(1, 1, 1, ()=>{});
+            instance.AddTimer(1000+1, 1, 1, ()=>{});
+            instance.AddTimer(1000*60+1, 1, 1, ()=>{});
+            instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
+            instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            List<int> res = instance.GetDistri();
+            List<int> expect = new List<int>();
+            for ( int i=0; i<5; i++ )
+            {
+                expect.Add(1);
+            }
+            for ( int i=0; i<5; i++ )
+            {
+                Assert.IsTrue(res[i]==expect[i]);
+            }
+        }
+        
+        [Test]
+        public void TestRemove()
+        {
+            HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            Assert.IsNotNull(instance);
+            Assert.IsNotNull(instance.GetCurrentTime());
+            uint id1 = instance.AddTimer(1, 1, 1, ()=>{});
+            uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{});
+            uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
+            uint id4 = instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
+            uint id5 = instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            instance.RemoveTimer(id1);
+            instance.RemoveTimer(id2);
+            instance.RemoveTimer(id3);
+            instance.RemoveTimer(id4);
+            instance.RemoveTimer(id5);
         }
     }
 }
