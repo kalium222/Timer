@@ -100,12 +100,6 @@ namespace Timer
         {
             Task.Invoke();
         }
-        public async Task DoTaskAsync()
-        {
-            await System.Threading.Tasks.Task.Run(()=>{
-                    Task?.Invoke();
-                    });
-        }
     }
 
     public class TimerList : IEnumerable
