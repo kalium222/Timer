@@ -92,6 +92,8 @@ namespace Timer
         private List<TimeWheel> m_timeWheelArray;
         private ConcurrentDictionary<uint, Timer> m_timerTable;
         private uint m_maxId = 0;
+        private Thread m_updateThread;
+        private bool m_updateThreadRunning = false;
 
         // public method
         // 生成合适大小的一系列timewheels
@@ -106,6 +108,38 @@ namespace Timer
             m_timeWheelArray.Add(new TimeWheel(1*1000*60*60, 24));
             m_timeWheelArray.Add(new TimeWheel(1*1000*60*60*24, 50));
             m_timerTable = new ConcurrentDictionary<uint, Timer>();
+            m_updateThread = new Thread(this.Update);
+            m_updateThread.IsBackground = true;
+        }
+
+        private void Update()
+        {
+            while ( this.m_updateThreadRunning )
+            {
+                this.Tick();
+                Thread.Sleep(1);
+            }
+            return;
+        }
+
+        public void Start()
+        {
+            lock (m_lock)
+            {
+                if ( m_updateThread.IsAlive ) throw new InvalidOperationException("Timer has been started!");
+                m_updateThreadRunning = true;
+                m_updateThread.Start();
+            }
+        }
+
+        public void Reset() {
+            lock ( m_lock )
+            {
+                m_updateThreadRunning = false;
+                while ( m_updateThread.IsAlive )
+                    Thread.Sleep(1000);
+                this.ClearAll();
+            }
         }
 
         public static HierachicalTimeWheel Instance
@@ -148,7 +182,7 @@ namespace Timer
                         }
                         else
                         {
-                            this.ModifyTimer(t, t.Interval, 
+                            this.ModifyTimer(t, t.Interval+this.GetCurrentTime(), 
                                     t.Interval, t.Times-1);
                         }
                     }

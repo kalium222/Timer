@@ -160,7 +160,26 @@ namespace Timer.Test
         [Test]
         public void TestModify()
         {
+            HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            instance.ClearAll();
+            uint id1 = instance.AddTimer(1, 1, 1, ()=>{});
+            uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{});
+            uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
+            uint id4 = instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
+            uint id5 = instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            List<int> res;
 
+            instance.ModifyTimer(id1, 1000+1, 1, 1);
+            res = instance.GetDistri();
+            List<int> expect1 = new List<int>(new int[] {0, 2, 1, 1, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect1[i]);
+
+            instance.ModifyTimer(id1, 1000*60+1, 1, 1);
+            res = instance.GetDistri();
+            List<int> expect2 = new List<int>(new int[] {0, 1, 2, 1, 1});
+            for ( int i=0; i<5; i++ )
+                Assert.IsTrue(res[i]==expect2[i]);
         }
         
         [Test]
@@ -168,9 +187,7 @@ namespace Timer.Test
         {
             HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
             instance.ClearAll();
-            Assert.IsNotNull(instance);
-            Assert.IsNotNull(instance.GetCurrentTime());
-            uint id1 = instance.AddTimer(1, 1, 1, ()=>{
+            uint id1 = instance.AddTimer(1, 10, 10, ()=>{
                     Console.WriteLine("t1!");
                     });
             uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{
@@ -183,6 +200,24 @@ namespace Timer.Test
             {
                 instance.Tick();
             }
+        }
+
+        [Test]
+        public void TestRun()
+        {
+            HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            instance.ClearAll();
+            uint id1 = instance.AddTimer(1, 10, 10, ()=>{
+                    Console.WriteLine("t1!");
+                    });
+            uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{
+                    Console.WriteLine("t2!");
+                    });
+            uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
+            uint id4 = instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
+            uint id5 = instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            instance.Start();
+            Thread.Sleep(10000);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Timer
     {
         // private
         private uint m_id;
+        // 绝对时间
         private ulong m_postpone;
         private ulong m_interval;
         private uint m_times;
@@ -95,7 +96,11 @@ namespace Timer
         // 应该被HierachicalTimeWheel调用
         // 仅smallest timewheel需DoTask
         // 还需要重新调度
-        public async Task DoTask()
+        public void DoTask()
+        {
+            Task.Invoke();
+        }
+        public async Task DoTaskAsync()
         {
             await System.Threading.Tasks.Task.Run(()=>{
                     Task?.Invoke();
