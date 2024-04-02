@@ -60,6 +60,24 @@ namespace Timer.Test
             Assert.IsNull(t3.Next);
         }
 
+        [Test]
+        public void TestIterator()
+        {
+            TimerList l1 = new TimerList();
+            Timer t1 = new Timer(1);
+            Timer t2 = new Timer(2);
+            Timer t3 = new Timer(3);
+            Timer t4 = new Timer(4);
+            l1.Add(t1);
+            l1.Add(t2);
+            l1.Add(t3);
+            l1.Add(t4);
+            foreach ( Timer timer in l1 )
+            {
+                Assert.IsNotNull(timer.Id);
+            }
+        }
+
     }
 
     public class TestTimeWheel

@@ -134,6 +134,8 @@ namespace Timer
             // TODO:
             // finish the timers in the smallest TimeWheel
             // pop the timers to the smaller TimeWheel from current one
+
+            // 移动时间指针
             foreach ( TimeWheel tw in m_timeWheelArray )
             {
                 if ( !tw.Tick() ) 

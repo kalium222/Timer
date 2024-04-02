@@ -1,3 +1,5 @@
+using System.Collections;
+
 namespace Timer 
 {
     public class Timer 
@@ -50,6 +52,13 @@ namespace Timer
             Task += task;
         }
 
+        public void Destroy()
+        {
+            this.Next?.Destroy();
+            this.Next = null;
+            this.Prev = null;
+        }
+
         public uint Id {
             get { return m_id; }
         }
@@ -92,7 +101,7 @@ namespace Timer
         }
     }
 
-    public class TimerList 
+    public class TimerList : IEnumerable
     {
         private Timer m_head;
         
@@ -100,6 +109,40 @@ namespace Timer
         public TimerList()
         {
             m_head = new Timer();
+        }
+
+        private class TimerIterator : IEnumerator
+        {
+            private TimerList m_container;
+            private Timer? m_postion;
+            public TimerIterator(TimerList container)
+            {
+                m_container = container;
+                m_postion = container.Head.Next;
+            }
+            void IEnumerator.Reset()
+            {
+                m_postion = m_container.Head.Next;
+            }
+            bool IEnumerator.MoveNext()
+            {
+                m_postion = m_postion?.Next;
+                return m_postion != null;
+            }
+            object IEnumerator.Current
+            {
+                get
+                {
+                    if ( m_postion==null )
+                        throw new IndexOutOfRangeException();
+                    return m_postion;
+                }
+            }
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            return new TimerIterator(this);
         }
 
         // 不检查各种条件(是否重复等)，交给timewheel
@@ -126,6 +169,7 @@ namespace Timer
 
         public void Clear()
         {
+            m_head.Next?.Destroy();
             m_head.Next = null;
         }
 
