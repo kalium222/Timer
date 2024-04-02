@@ -95,9 +95,11 @@ namespace Timer
         // 应该被HierachicalTimeWheel调用
         // 仅smallest timewheel需DoTask
         // 还需要重新调度
-        public void DoTask()
+        public async Task DoTask()
         {
-            Task.Invoke();
+            await System.Threading.Tasks.Task.Run(()=>{
+                    Task?.Invoke();
+                    });
         }
     }
 

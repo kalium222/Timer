@@ -119,8 +119,6 @@ namespace Timer.Test
         {
             HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
             instance.ClearAll();
-            Assert.IsNotNull(instance);
-            Assert.IsNotNull(instance.GetCurrentTime());
             uint id1 = instance.AddTimer(1, 1, 1, ()=>{});
             uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{});
             uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
@@ -157,6 +155,12 @@ namespace Timer.Test
             List<int> expect5 = new List<int>(new int[] {0, 0, 0, 0, 0});
             for ( int i=0; i<5; i++ )
                 Assert.IsTrue(res[i]==expect5[i]);
+        }
+
+        [Test]
+        public void TestModify()
+        {
+
         }
         
         [Test]

@@ -190,7 +190,6 @@ namespace Timer
         }
 
         // 把timer加入Dictionary
-        // id?
         // 根据时间把timer加入合适的timewheel
         public uint AddTimer(ulong postpone, ulong interval, uint times, Action task)
         {
@@ -206,7 +205,6 @@ namespace Timer
         public void AddTimer(Timer timer)
         {
             m_timerTable.TryAdd(timer.Id, timer);
-            // TODO:
             ulong idx = timer.Postpone - this.GetCurrentTime();
             if ( (long)idx <= 0 )
                 m_timeWheelArray.First().AddTimer(timer);
@@ -214,7 +212,6 @@ namespace Timer
                 m_timeWheelArray.Last().AddTimer(timer);
             else
             {
-                // TODO:
                 foreach ( TimeWheel tw in m_timeWheelArray )
                 {
                     if ( idx <= tw.MaxTime )
