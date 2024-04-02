@@ -27,9 +27,9 @@ namespace Timer
         public bool Tick()
         {
             m_current++;
-            bool flag = ( m_current==m_wheelSize );
+            bool carry = ( m_current==m_wheelSize );
             m_current %= m_wheelSize;
-            return flag;
+            return carry;
         }
 
         // 该timewheel上，现在走过的时间
@@ -131,16 +131,32 @@ namespace Timer
         // 重复任务重新放置
         public void Tick()
         {
-            // TODO:
-            // finish the timers in the smallest TimeWheel
-            // pop the timers to the smaller TimeWheel from current one
-
-            // 移动时间指针
+            bool carry = true;
             foreach ( TimeWheel tw in m_timeWheelArray )
             {
-                if ( !tw.Tick() ) 
-                {
+                if ( !carry )
                     break;
+                carry = tw.Tick();
+                if ( tw == m_timeWheelArray.First() )
+                {
+                    foreach ( Timer t in tw.GetCurrentTimerList() )
+                    {
+                        t.DoTask();
+                        if ( t.Times<=1 )
+                        {
+                            this.RemoveTimer(t);
+                        }
+                        else
+                        {
+                            this.ModifyTimer(t, t.Interval, 
+                                    t.Interval, t.Times-1);
+                        }
+                    }
+                }
+                else // 向下移动    
+                {
+                    foreach ( Timer t in tw.GetCurrentTimerList() )
+                        this.RefreshTimer(t);
                 }
             }
         }
@@ -233,13 +249,19 @@ namespace Timer
             return 0;
         }
 
+        public int ModifyTimer(Timer timer, ulong postpone, ulong interval, uint times)
+        {
+            timer.Postpone = postpone;
+            timer.Interval = interval;
+            timer.Times = times;
+            this.RefreshTimer(timer);
+            return 0;
+        }
+
         public int ModifyTimer(uint id, ulong postpone, ulong interval, uint times)
         {
             Timer modified = GetTimer(id);
-            modified.Postpone = postpone;
-            modified.Interval = interval;
-            modified.Times = times;
-            this.RefreshTimer(modified);
+            this.ModifyTimer(modified, postpone, interval, times);
             return 0;
         }
 

@@ -27,7 +27,7 @@ namespace Timer
 
         public Timer(uint id)
         {
-            m_id = 0;
+            m_id = id;
             m_postpone = 0;
             m_interval = 0;
             m_times = 1;
@@ -118,11 +118,11 @@ namespace Timer
             public TimerIterator(TimerList container)
             {
                 m_container = container;
-                m_postion = container.Head.Next;
+                m_postion = container.Head;
             }
             void IEnumerator.Reset()
             {
-                m_postion = m_container.Head.Next;
+                m_postion = m_container.Head;
             }
             bool IEnumerator.MoveNext()
             {

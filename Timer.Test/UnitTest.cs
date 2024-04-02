@@ -158,6 +158,28 @@ namespace Timer.Test
             for ( int i=0; i<5; i++ )
                 Assert.IsTrue(res[i]==expect5[i]);
         }
+        
+        [Test]
+        public void TestTick()
+        {
+            HierachicalTimeWheel instance = HierachicalTimeWheel.Instance;
+            instance.ClearAll();
+            Assert.IsNotNull(instance);
+            Assert.IsNotNull(instance.GetCurrentTime());
+            uint id1 = instance.AddTimer(1, 1, 1, ()=>{
+                    Console.WriteLine("t1!");
+                    });
+            uint id2 = instance.AddTimer(1000+1, 1, 1, ()=>{
+                    Console.WriteLine("t2!");
+                    });
+            uint id3 = instance.AddTimer(1000*60+1, 1, 1, ()=>{});
+            uint id4 = instance.AddTimer(1000*60*60+1, 1, 1, ()=>{});
+            uint id5 = instance.AddTimer(1000*60*60*24+1, 1, 1, ()=>{});
+            for ( int i=0; i<1001; i++ )
+            {
+                instance.Tick();
+            }
+        }
     }
 }
 
